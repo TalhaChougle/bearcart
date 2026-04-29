@@ -52,22 +52,49 @@ html, body, .stApp {
     color: var(--text) !important;
 }
 
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background-color: var(--surface) !important;
-    border-right: 1px solid var(--border) !important;
+/* Sidebar labels */
+.section-header {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    margin-top: 4px;
 }
-section[data-testid="stSidebar"] * { color: var(--text) !important; }
-
-/* Radio buttons */
-div[data-testid="stRadio"] label {
-    font-family: 'DM Sans', sans-serif !important;
+section[data-testid="stSidebar"] .stMarkdown p {
     font-size: 0.9rem !important;
-    padding: 6px 10px !important;
-    border-radius: 6px !important;
-    display: block !important;
+    line-height: 2 !important;
 }
-div[data-testid="stRadio"] label:hover { background: var(--bg) !important; }
+
+/* Sidebar nav - remove radio dots, bigger font, emoji inline */
+div[data-testid="stRadio"] > div {
+    gap: 2px !important;
+}
+div[data-testid="stRadio"] label {
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    padding: 7px 10px !important;
+    border-radius: 7px !important;
+    display: flex !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    color: var(--muted) !important;
+}
+div[data-testid="stRadio"] label:hover {
+    background: var(--bg) !important;
+    color: var(--text) !important;
+}
+div[data-testid="stRadio"] label[data-baseweb="radio"] {
+    background: #EFF6FF !important;
+    color: var(--accent) !important;
+    font-weight: 700 !important;
+}
+/* Hide the radio circle dot completely */
+div[data-testid="stRadio"] label div[data-testid="stMarkdownContainer"] { display: none !important; }
+div[data-testid="stRadio"] input[type="radio"] { display: none !important; }
+div[data-testid="stRadio"] label > div:first-child { display: none !important; }
+div[data-testid="stRadio"] span { font-size: 0.95rem !important; }
 
 /* Headings */
 h1, h2, h3, h4 {
@@ -321,10 +348,12 @@ def get_data(file_bytes=None):
             "time_spent_sec": np.random.randint(10, 900, n),
             "device": np.random.choice(["Mobile", "Desktop"], n, p=[0.7, 0.3]),
             "location": np.random.choice(["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Pune"], n),
-            "hour_of_day": np.random.choice(range(24), n, p=[
-                0.01,0.01,0.01,0.01,0.02,0.03,0.04,0.06,0.07,0.06,0.05,0.05,
-                0.05,0.05,0.05,0.06,0.06,0.07,0.07,0.06,0.05,0.04,0.03,0.02
-            ]),
+            "hour_of_day": np.concatenate([
+                np.random.choice([6,7,8,9,10,11], int(n*0.25)),
+                np.random.choice([12,13,14,15,16,17], int(n*0.25)),
+                np.random.choice([18,19,20,21,22,23], int(n*0.30)),
+                np.random.choice([0,1,2,3,4,5], n - int(n*0.25) - int(n*0.25) - int(n*0.30))
+            ]).astype(int),
             "order_value": np.where(np.random.random(n) > 0.85, np.random.uniform(30, 200, n), 0.0),
             "traffic_source": np.random.choice(["gsearch", "bsearch", "socialbook", "direct", "email"], n, p=[0.45, 0.2, 0.15, 0.12, 0.08]),
             "is_repeat_session": np.random.choice([0, 1], n, p=[0.7, 0.3]),
