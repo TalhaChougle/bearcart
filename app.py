@@ -170,6 +170,19 @@ div[data-testid="metric-container"] [data-testid="stMetricDelta"] div {
     border-radius: 10px !important;
     padding: 10px !important;
 }
+.stFileUploader > div {
+    background: var(--surface) !important;
+}
+[data-testid="stFileUploadDropzone"] {
+    background: var(--surface) !important;
+    border: 1.5px dashed var(--border) !important;
+    color: var(--text) !important;
+}
+[data-testid="stFileUploadDropzone"] button {
+    background: var(--accent) !important;
+    color: white !important;
+    border-radius: 6px !important;
+}
 
 /* Divider */
 hr { border-color: var(--border) !important; }
@@ -308,7 +321,10 @@ def get_data(file_bytes=None):
             "time_spent_sec": np.random.randint(10, 900, n),
             "device": np.random.choice(["Mobile", "Desktop"], n, p=[0.7, 0.3]),
             "location": np.random.choice(["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Pune"], n),
-            "hour_of_day": np.random.randint(0, 24, n),
+            "hour_of_day": np.random.choice(range(24), n, p=[
+                0.01,0.01,0.01,0.01,0.02,0.03,0.04,0.06,0.07,0.06,0.05,0.05,
+                0.05,0.05,0.05,0.06,0.06,0.07,0.07,0.06,0.05,0.04,0.03,0.02
+            ]),
             "order_value": np.where(np.random.random(n) > 0.85, np.random.uniform(30, 200, n), 0.0),
             "traffic_source": np.random.choice(["gsearch", "bsearch", "socialbook", "direct", "email"], n, p=[0.45, 0.2, 0.15, 0.12, 0.08]),
             "is_repeat_session": np.random.choice([0, 1], n, p=[0.7, 0.3]),
@@ -379,7 +395,7 @@ with st.sidebar:
 
     menu = st.radio(
         "",
-        ["🚀 Dashboard", "📊 Deep Analysis", "🧠 AI Chat", "⚡ Action Center", "🔮 Future Lab", "🧹 Data Lab"],
+        ["🚀 Dashboard", "📊 Deep Analysis", "🧠 AI Chat", "⚡ Action Center", "🔮 Future Lab", "🧹 Data Lab", "▶ Use Cases"],
         label_visibility="collapsed"
     )
 
@@ -1481,6 +1497,106 @@ elif menu == "🧹 Data Lab":
                 display_df = explore_df[mask]
                 st.caption(f"{len(display_df):,} rows match '{search}'")
             st.dataframe(display_df, use_container_width=True, height=350)
+
+# ==========================================
+# 7. USE CASES
+# ==========================================
+elif menu == "▶ Use Cases":
+    st.markdown("# Use Cases")
+    st.markdown('<p style="color:#6B7280;margin-top:-10px">4 real company scenarios — select one to see how BearCart solved it</p>', unsafe_allow_html=True)
+
+    cases = {
+        "🛒 Cart Abandonment Crisis": {
+            "company": "E-commerce · Q3 2024",
+            "problem": "Despite 14,925 monthly sessions, revenue was plateauing. 1,203 high-intent users were adding to cart but not buying. The team had no visibility into where or why they dropped off.",
+            "data": {"Sessions": "14,925", "Add to Cart": "2,239", "Purchased": "1,851", "Conv. Rate": "12.4%", "Est. Lost Revenue": "₹2,10,000"},
+            "steps": [
+                ("Segment by intent score", "BearCart identified 1,203 High Intent users who viewed 4+ products and spent 8+ mins but didn't buy."),
+                ("Time heatmap analysis", "68% of abandonments happened between 8pm–11pm on mobile — users browsing after work."),
+                ("Root cause found", "Mobile checkout had 4 steps vs 2 on desktop. 61% bounced at the payment screen."),
+                ("WhatsApp campaign", "Launched retargeting to 1,203 users with code BEAR15 within 2 hours of abandonment."),
+            ],
+            "result": "✅ ₹2,10,000 recovered in 3 weeks. Conv. rate improved 12.4% → 15.1%.",
+            "color": "#059669"
+        },
+        "📉 Traffic Drop Investigation": {
+            "company": "Analytics · Feb 2025",
+            "problem": "Sessions dropped 34% week-over-week with no change in ad spend. CEO needed root cause within 24 hours.",
+            "data": {"Week 1 Sessions": "3,731", "Week 2 Sessions": "2,463", "WoW Change": "-34%", "Google Search Drop": "-52%", "Other Sources": "Stable"},
+            "steps": [
+                ("Source breakdown", "Traffic Sources chart showed Google Search fell from 1,678 → 806. All other sources flat or up."),
+                ("Time heatmap check", "Drop was uniform across all hours — ruling out technical outage, pointing to ranking change."),
+                ("Segment impact", "High Intent users dropped 41% — mostly Google Search arrivals. Revenue impact disproportionate."),
+                ("Diagnosis", "Google core algorithm update confirmed. Recommended: boost email, increase Google Ads 30%, fix thin content pages."),
+            ],
+            "result": "✅ Root cause found in 2 hours. Email compensated 40% of lost traffic within 1 week.",
+            "color": "#2563EB"
+        },
+        "📱 Mobile Revenue Gap": {
+            "company": "UX Audit · Q4 2024",
+            "problem": "62% of sessions came from mobile, but mobile generated only 31% of revenue. Desktop was converting at 3× the rate.",
+            "data": {"Mobile Sessions": "9,253 (62%)", "Mobile Revenue": "₹26,105 (31%)", "Mobile Conv.": "7.1%", "Desktop Conv.": "21.3%", "Revenue Gap": "3.6×"},
+            "steps": [
+                ("Revenue per session", "Desktop ₹10.24/session vs Mobile ₹2.82/session — 3.6× gap, highest priority fix."),
+                ("Behaviour analysis", "Mobile users viewed 1.8 products vs 3.2 desktop. Time on site 4m vs 8m 44s."),
+                ("Funnel drop-off", "61% mobile drop at payment step. 14-field form, no UPI/wallet options for Indian users."),
+                ("Fix & A/B test", "Checkout: 4 steps → 2 steps. Added PhonePe, GPay, Paytm. Ran A/B test on 50% of traffic."),
+            ],
+            "result": "✅ Mobile conv. rate 7.1% → 13.8%. ₹18,200 additional monthly mobile revenue.",
+            "color": "#7C3AED"
+        },
+        "🎯 Ad Spend Reallocation": {
+            "company": "Marketing · Jan 2025",
+            "problem": "₹1,80,000/month ad budget. CMO felt ROAS was weak. BearCart found 30% of spend going to low-intent social traffic that never converted.",
+            "data": {"Monthly Budget": "₹1,80,000", "Wasted (Low Intent)": "₹54,000", "Google Conv.": "14%", "Social Conv.": "8%", "Email Conv.": "22%"},
+            "steps": [
+                ("Segment-source overlap", "Low Intent users arrived from broad Instagram/Facebook audiences. Avg 1.2 pages, then bounced."),
+                ("Cost per conversion", "Google ₹210/conv. Social ₹890/conv. Email ₹42/conv. Social was 21× more expensive than email."),
+                ("Reallocation", "Cut social 60% (₹32,400 freed). Added ₹12,000 to email. Shifted ₹20,400 to Google branded keywords."),
+                ("Coupon targeting", "VIP15 for High Intent, MID10 for Medium Intent — via email only, not social."),
+            ],
+            "result": "✅ ₹54,000/month recovered. ROAS improved 2.1× → 3.4×. Email list grew 28% in 6 weeks.",
+            "color": "#D97706"
+        }
+    }
+
+    selected = st.selectbox("Select a use case to explore", list(cases.keys()))
+    case = cases[selected]
+
+    st.markdown(f"""
+    <div style="background:#fff;border:1px solid #E4E7EC;border-radius:12px;padding:20px 24px;margin:12px 0">
+        <div style="font-size:13px;font-weight:700;color:#6B7280;margin-bottom:4px">{case['company']}</div>
+        <div style="font-size:14px;color:#111827;line-height:1.6;background:#F7F8FA;border-radius:8px;padding:12px 16px;margin-top:8px">{case['problem']}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("#### Key data points")
+    cols = st.columns(len(case["data"]))
+    for col, (k, v) in zip(cols, case["data"].items()):
+        col.markdown(f"""
+        <div style="background:#fff;border:1px solid #E4E7EC;border-radius:10px;padding:14px 16px;text-align:center">
+            <div style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">{k}</div>
+            <div style="font-size:20px;font-weight:800;color:#111827;letter-spacing:-0.5px">{v}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("#### What the team did — step by step")
+    for i, (title, desc) in enumerate(case["steps"], 1):
+        st.markdown(f"""
+        <div style="display:flex;gap:14px;margin-bottom:12px;align-items:flex-start">
+            <div style="width:26px;height:26px;border-radius:50%;background:{case['color']};color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">{i}</div>
+            <div>
+                <div style="font-size:13px;font-weight:700;color:#111827">{title}</div>
+                <div style="font-size:12px;color:#6B7280;margin-top:3px;line-height:1.5">{desc}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="background:#D1FAE5;border:1px solid #6EE7B7;border-radius:10px;padding:16px 20px;margin-top:8px;font-size:14px;font-weight:600;color:#065F46">
+        {case['result']}
+    </div>
+    """, unsafe_allow_html=True)
 
 # ==========================================
 # FOOTER
