@@ -85,19 +85,27 @@ div[data-testid="metric-container"] {
     padding: 18px 20px !important;
     box-shadow: var(--shadow) !important;
 }
-div[data-testid="metric-container"] label {
-    font-family: 'DM Sans', sans-serif !important;
+div[data-testid="metric-container"] label,
+div[data-testid="metric-container"] [data-testid="stMetricLabel"],
+div[data-testid="metric-container"] [data-testid="stMetricLabel"] p,
+div[data-testid="metric-container"] [data-testid="stMetricLabel"] div {
     font-size: 0.75rem !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
     color: var(--muted) !important;
 }
-div[data-testid="metric-container"] [data-testid="stMetricValue"] {
-    font-family: 'DM Mono', monospace !important;
-    font-size: 1.6rem !important;
-    font-weight: 500 !important;
+div[data-testid="metric-container"] [data-testid="stMetricValue"],
+div[data-testid="metric-container"] [data-testid="stMetricValue"] div {
+    font-size: 1.8rem !important;
+    font-weight: 800 !important;
     color: var(--text) !important;
+    letter-spacing: -0.5px !important;
+}
+div[data-testid="metric-container"] [data-testid="stMetricDelta"],
+div[data-testid="metric-container"] [data-testid="stMetricDelta"] div {
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
 }
 
 /* Inputs */
@@ -432,8 +440,9 @@ if menu == "🚀 Dashboard":
     # ---- Row 1: Hourly Traffic + Segment Donut ----
     c1, c2 = st.columns([2, 1])
     with c1:
-        trend = df.groupby("hour_of_day")["session_id"].count().reset_index()
+        trend = df.groupby("hour_of_day").size().reset_index(name="Sessions")
         trend.columns = ["Hour", "Sessions"]
+        trend = trend.sort_values("Hour")
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=trend["Hour"], y=trend["Sessions"],
@@ -444,6 +453,7 @@ if menu == "🚀 Dashboard":
         ))
         fig = styled_chart(fig, "Hourly Traffic Pattern")
         fig.update_xaxes(tickvals=list(range(0, 24, 3)), ticktext=[f"{h}:00" for h in range(0, 24, 3)])
+        fig.update_yaxes(rangemode="tozero")
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     with c2:
