@@ -426,14 +426,36 @@ if menu == "🚀 Dashboard":
     avg_order = df[df["order_value"] > 0]["order_value"].mean() if len(df[df["order_value"] > 0]) > 0 else 0
     revenue = df["order_value"].sum()
     mobile_share = (df["device"].str.lower() == "mobile").mean() * 100 if "device" in df.columns else 0
-    repeat_rate = df["is_repeat_session"].mean() * 100 if "is_repeat_session" in df.columns else 0
 
-    k1, k2, k3, k4, k5 = st.columns(5)
-    k1.metric("Total Sessions", f"{len(df):,}", delta="+12%")
-    k2.metric("Revenue", f"₹{revenue:,.0f}", delta="+8.3%")
-    k3.metric("Conv. Rate", f"{conv_rate:.1f}%", delta="+0.4%")
-    k4.metric("Avg. Order Value", f"₹{avg_order:.0f}", delta="-2.1%")
-    k5.metric("Mobile Share", f"{mobile_share:.0f}%")
+    st.markdown(f"""
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px">
+        <div style="background:#fff;border:1px solid #E4E7EC;border-radius:12px;padding:16px 18px">
+            <div style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Total Sessions</div>
+            <div style="font-size:28px;font-weight:800;color:#111827;letter-spacing:-1px;line-height:1">{len(df):,}</div>
+            <div style="font-size:12px;font-weight:600;color:#059669;margin-top:6px">▲ +12%</div>
+        </div>
+        <div style="background:#fff;border:1px solid #E4E7EC;border-radius:12px;padding:16px 18px">
+            <div style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Revenue</div>
+            <div style="font-size:28px;font-weight:800;color:#111827;letter-spacing:-1px;line-height:1">₹{revenue:,.0f}</div>
+            <div style="font-size:12px;font-weight:600;color:#059669;margin-top:6px">▲ +8.3%</div>
+        </div>
+        <div style="background:#fff;border:1px solid #E4E7EC;border-radius:12px;padding:16px 18px">
+            <div style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Conv. Rate</div>
+            <div style="font-size:28px;font-weight:800;color:#111827;letter-spacing:-1px;line-height:1">{conv_rate:.1f}%</div>
+            <div style="font-size:12px;font-weight:600;color:#059669;margin-top:6px">▲ +0.4%</div>
+        </div>
+        <div style="background:#fff;border:1px solid #E4E7EC;border-radius:12px;padding:16px 18px">
+            <div style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Avg. Order</div>
+            <div style="font-size:28px;font-weight:800;color:#111827;letter-spacing:-1px;line-height:1">₹{avg_order:.0f}</div>
+            <div style="font-size:12px;font-weight:600;color:#DC2626;margin-top:6px">▼ -2.1%</div>
+        </div>
+        <div style="background:#fff;border:1px solid #E4E7EC;border-radius:12px;padding:16px 18px">
+            <div style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Mobile Share</div>
+            <div style="font-size:28px;font-weight:800;color:#111827;letter-spacing:-1px;line-height:1">{mobile_share:.0f}%</div>
+            <div style="font-size:12px;font-weight:600;color:#059669;margin-top:6px">▲ steady</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -442,7 +464,11 @@ if menu == "🚀 Dashboard":
     with c1:
         trend = df.groupby("hour_of_day").size().reset_index(name="Sessions")
         trend.columns = ["Hour", "Sessions"]
-        trend = trend.sort_values("Hour")
+        trend = trend.sort_values("Hour").reset_index(drop=True)
+        # Ensure all 24 hours exist
+        all_hours = pd.DataFrame({"Hour": range(24)})
+        trend = all_hours.merge(trend, on="Hour", how="left").fillna(0)
+        trend["Sessions"] = trend["Sessions"].astype(int)
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=trend["Hour"], y=trend["Sessions"],
